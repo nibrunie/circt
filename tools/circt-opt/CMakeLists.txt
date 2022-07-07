@@ -32,6 +32,7 @@ target_link_libraries(circt-opt
   CIRCTMSFT
   CIRCTHW
   CIRCTHWToLLHD
+  CIRCTHWToSystemC
   CIRCTHWTransforms
   CIRCTSCFToCalyx
   CIRCTScheduling
@@ -44,6 +45,7 @@ target_link_libraries(circt-opt
   CIRCTStaticLogicToCalyx
   CIRCTSV
   CIRCTSVTransforms
+  CIRCTSystemC
   CIRCTTransforms
 
   

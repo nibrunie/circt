@@ -25,6 +25,7 @@ target_link_libraries(circt-reduce
   CIRCTSeq
   CIRCTStaticLogicOps
   CIRCTSV
+  CIRCTSystemC
 
   MLIRIR
   MLIRParser
