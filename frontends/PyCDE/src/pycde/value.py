@@ -257,6 +257,107 @@ class BitVectorValue(Value):
   def __len__(self):
     return self.type.width
 
+  # Infix operators
+  def __add__(self, other):
+    from .dialects import comb
+    return comb.AddOp(self, other)
+
+  def __sub__(self, other):
+    from .dialects import comb
+    return comb.SubOp(self, other)
+
+  def __mul__(self, other):
+    from .dialects import comb
+    return comb.MulOp(self, other)
+
+  def __eq__(self, other):
+    from .dialects import comb
+    return comb.EqOp(self, other)
+
+  def __ne__(self, other):
+    from .dialects import comb
+    return comb.NeOp(self, other)
+
+  def __lshift__(self, other):
+    from .dialects import comb
+    return comb.ShlOp(self, other)
+
+  def __and__(self, other):
+    from .dialects import comb
+    return comb.AndOp(self, other)
+
+  def __or__(self, other):
+    from .dialects import comb
+    return comb.OrOp(self, other)
+
+  def __xor__(self, other):
+    from .dialects import comb
+    return comb.XorOp(self, other)
+
+  def __invert__(self):
+    from .dialects import comb
+    return self ^ self.type(-1)
+
+
+class SignedBitVectorValue(BitVectorValue):
+
+  def __execute_binop__(self, other, op):
+    if not isinstance(other, SignedBitVectorValue):
+      raise TypeError("rhs operand must be signed")
+    return op(self, other)
+
+  def __lt__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.LtSOp)
+
+  def __le__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.LeSOp)
+
+  def __ge__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.GeSOp)
+
+  def __truediv__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.DivSOp)
+
+  def __rshift__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.ShrSOp)
+
+
+class UnsignedBitVectorValue(BitVectorValue):
+
+  @property
+  def asSInt(self):
+    return SignedBitVectorValue(self)
+
+  def __execute_binop__(self, other, op):
+    if not isinstance(other, UnsignedBitVectorValue):
+      raise TypeError("rhs operand must be unsigned")
+    return op(self, other)
+
+  def __lt__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.LtUOp)
+
+  def __le__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.LeUOp)
+
+  def __ge__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.GeUOp)
+
+  def __truediv__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.DivUOp)
+
+  def __rshift__(self, other):
+    from .dialects import comb
+    return self.__execute_binop__(other, comb.ShrUOp)
+
 
 class ListValue(Value):
 
