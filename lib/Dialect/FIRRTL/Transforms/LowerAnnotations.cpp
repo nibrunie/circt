@@ -267,6 +267,13 @@ static LogicalResult applyDontTouch(const AnnoPathValue &target,
   return success();
 }
 
+/// Just drop the annotation.  This is intended for Annotations which are known,
+/// but can be safely ignored.
+static LogicalResult drop(const AnnoPathValue &target, DictionaryAttr anno,
+                          ApplyState &state) {
+  return success();
+}
+
 //===----------------------------------------------------------------------===//
 // Driving table
 //===----------------------------------------------------------------------===//
@@ -279,6 +286,11 @@ struct AnnoRecord {
                                    ApplyState &)>
       applier;
 };
+
+/// Resolution and Application for a firrtl.NoTargetAnnotation.
+static AnnoRecord NoTargetAnnotation = {noResolve,
+                                        applyWithoutTarget<false, CircuitOp>};
+
 } // end anonymous namespace
 
 static const llvm::StringMap<AnnoRecord> annotationRecords{{
@@ -289,6 +301,8 @@ static const llvm::StringMap<AnnoRecord> annotationRecords{{
     {"circt.testNT", {noResolve, applyWithoutTarget<>}},
     {"circt.missing", {tryResolve, applyWithoutTarget<>}},
     // Grand Central Views/Interfaces Annotations
+    {extractGrandCentralClass, NoTargetAnnotation},
+    {grandCentralHierarchyFileAnnoClass, NoTargetAnnotation},
     {serializedViewAnnoClass, {noResolve, applyGCTView}},
     {viewAnnoClass, {noResolve, applyGCTView}},
     {companionAnnoClass, {stdResolve, applyWithoutTarget<>}},
@@ -315,8 +329,49 @@ static const llvm::StringMap<AnnoRecord> annotationRecords{{
     // OMIR Annotations
     {omirAnnoClass, {noResolve, applyOMIR}},
     {omirTrackerAnnoClass, {stdResolve, applyWithoutTarget<true>}},
+    {omirFileAnnoClass, NoTargetAnnotation},
     // Miscellaneous Annotations
-    {dontTouchAnnoClass, {stdResolve, applyDontTouch}}
+    {dontTouchAnnoClass, {stdResolve, applyDontTouch}},
+    {prefixModulesAnnoClass,
+     {stdResolve,
+      applyWithoutTarget<true, FModuleOp, FExtModuleOp, InstanceOp>}},
+    {dutAnnoClass, {stdResolve, applyWithoutTarget<false, FModuleOp>}},
+    {extractSeqMemsAnnoClass, NoTargetAnnotation},
+    {injectDUTHierarchyAnnoClass, NoTargetAnnotation},
+    {convertMemToRegOfVecAnnoClass, NoTargetAnnotation},
+    {sitestBlackBoxAnnoClass, NoTargetAnnotation},
+    {enumComponentAnnoClass, {noResolve, drop}},
+    {enumDefAnnoClass, {noResolve, drop}},
+    {enumVecAnnoClass, {noResolve, drop}},
+    {forceNameAnnoClass,
+     {stdResolve, applyWithoutTarget<true, FModuleOp, FExtModuleOp>}},
+    {flattenAnnoClass, {stdResolve, applyWithoutTarget<false, FModuleOp>}},
+    {inlineAnnoClass, {stdResolve, applyWithoutTarget<false, FModuleOp>}},
+    {noDedupAnnoClass,
+     {stdResolve, applyWithoutTarget<false, FModuleOp, FExtModuleOp>}},
+    {blackBoxInlineAnnoClass,
+     {stdResolve, applyWithoutTarget<false, FExtModuleOp>}},
+    {dontObfuscateModuleAnnoClass,
+     {stdResolve, applyWithoutTarget<false, FModuleOp>}},
+    {verifBlackBoxAnnoClass,
+     {stdResolve, applyWithoutTarget<false, FExtModuleOp>}},
+    {elaborationArtefactsDirectoryAnnoClass, NoTargetAnnotation},
+    {subCircuitsTargetDirectoryAnnoClass, NoTargetAnnotation},
+    {retimeModulesFileAnnoClass, NoTargetAnnotation},
+    {retimeModuleAnnoClass,
+     {stdResolve, applyWithoutTarget<false, FModuleOp, FExtModuleOp>}},
+    {metadataDirectoryAttrName, NoTargetAnnotation},
+    {moduleHierAnnoClass, NoTargetAnnotation},
+    {sitestTestHarnessBlackBoxAnnoClass, NoTargetAnnotation},
+    {testBenchDirAnnoClass, NoTargetAnnotation},
+    {testHarnessHierAnnoClass, NoTargetAnnotation},
+    {testHarnessPathAnnoClass, NoTargetAnnotation},
+    {prefixInterfacesAnnoClass, NoTargetAnnotation},
+    {subCircuitDirAnnotation, NoTargetAnnotation},
+    {extractAssertAnnoClass, NoTargetAnnotation},
+    {extractAssumeAnnoClass, NoTargetAnnotation},
+    {extractCoverageAnnoClass, NoTargetAnnotation},
+    {dftTestModeEnableAnnoClass, {stdResolve, applyWithoutTarget<true>}}
 
 }};
 
